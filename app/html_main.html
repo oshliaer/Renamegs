@@ -39,14 +39,14 @@
             </div>
           </fieldset>
         </form>
-        <div class="alert alert-info" role="alert"><code>{{addRemove}} {{prefixSuffix}} "{{text}}" of the {{type.join('and ')}} in "{{file.name}}"</code></div>
+        <div class="alert alert-info" role="alert"><code>{{addRemove}} {{prefixSuffix}} "{{text}}" of the {{type.join(' and ')}} in "{{file.name}}"</code></div>
         <div class="form-group">
           <div class="btn-group">
             <button class="btn btn-primary" type="button" v-on:click="getPreview" :disabled="!canPreview">Preview</button>
             <button class="btn btn-default" type="button" v-on:click="setDefaults" v-if="canRename">X</button>
           </div>
         </div>
-        <div class="list-group" v-if="preview.files"> 
+        <div class="list-group" v-if="preview.files">
           <a href="#" class="list-group-item disabled">Files</a>
           <a href="#" class="list-group-item" v-for="file in preview.files">{{file.name}} - {{file.newName}}</a>
         </div>
@@ -57,7 +57,7 @@
         <div class="form-group">
           <button class="btn btn-danger" type="button" v-on:click="rename" :disabled="!canRename">Go</button>
         </div>
-        <div class="list-group" v-if="result.files"> 
+        <div class="list-group" v-if="result.files">
           <a href="#" class="list-group-item disabled">Files</a>
           <a href="#" class="list-group-item" v-for="file in result.files">{{file.name}} - {{file.newName}}</a>
         </div>
@@ -100,7 +100,7 @@
          this.result = [];
       },
       getPreview: function() {
-        
+
         var vm = this;
         vm.state.job = true;
         var folderId = vm.file.id;
@@ -117,7 +117,7 @@
           })
           .rename(folderId, action, type, substr, newSubstr);
       },
-      
+
       rename: function() {
         var vm = this;
         vm.state.job = true;
