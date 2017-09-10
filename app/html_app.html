@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title></title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <style>
+    body {
+      padding-top: 70px;
+    }
+
+    .navbar-brand {
+      padding: 0px;
+    }
+
+    .navbar-brand>img {
+      height: 100%;
+      padding: 5px;
+      width: auto;
+    }
+    .inline {
+    display: inline;
+}
+  </style>
+</head>
+
+<body>
+  <!--
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="https://gitlab.com/google-apps-script-russian/templates/webapp-vuejs" target="_blank"><img src="https://gitlab.com/google-apps-script-russian/common/uploads/0895775d0b3b2243429155135b3f6470/crop_ru.png" alt=""></a>
+      </div>
+    </div>
+  </nav>
+  -->
+  <div class="container" id="app">
+    <router-view :settings="settings" :state="state" v-on:save="saveSettings" :file="file"></router-view>
+  </div>
+
+  <script src="https://unpkg.com/vue"></script>
+  <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <?!= include('html_main'); ?>
+    <?!= include('html_filepicker'); ?>
+
+      <script>
+        Vue.mixin({
+          methods: {
+            methodOne: function(file) {
+              console.log(file);
+              this.file = file;
+            }
+          }
+        });
+
+        var routes = [{
+            path: '/',
+            name: 'home',
+            component: component,
+          },
+          {
+            path: '*',
+            redirect: {
+              name: 'home'
+            }
+          }
+        ];
+
+        var router = new VueRouter({
+          routes: routes
+        })
+
+        router.replace({
+          path: '*',
+          redirect: '/'
+        });
+
+        var vm = new Vue({
+          el: '#app',
+          router: router,
+          data: {
+            data: [
+              []
+            ],
+            settings: {},
+            state: {
+              job: false
+            },
+            file: {}
+          },
+          methods: {
+            rename: function() {
+              var vm = this;
+              google.script.run
+                .withSuccessHandler(function(users) {
+                  console.log(users);
+                  vm.users = users;
+                })
+                .getData();
+            },
+            ready: function() {
+              this.methodOne();
+            },
+            saveSettings: function() {}
+          }
+        });
+      </script>
+      <script src="https://apis.google.com/js/api.js?onload=onApiLoad"></script>
+</body>
+
+</html>

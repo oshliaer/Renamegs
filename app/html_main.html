@@ -1,0 +1,177 @@
+<template id="component">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <form v-on:submit.prevent="saveSettings">
+          <fieldset :disabled="canRename">
+            <div class="form-group">
+              <div class="btn-group">
+                <button onclick='getOAuthToken()' type="button" class="btn btn-secondary">Select a Drive folder</button>
+              </div>
+              <p class="inline"><a v-bind:href="file.url" target="_blank">{{file.name}}</a></p>
+            </div>
+            <div class="form-group">
+              <label for="text">Text</label>
+              <input v-model="text" type="text" class="form-control" id="text" placeholder="Text">
+            </div>
+            <div class="form-group">
+              <input type="radio" id="add" value="add" v-model="addRemove">
+              <label for="add">Add</label>
+              <br>
+              <input type="radio" id="remove" value="remove" v-model="addRemove">
+              <label for="remove">Remove</label>
+              <br>
+            </div>
+            <div class="form-group">
+              <input type="radio" id="prefix" value="prefix" v-model="prefixSuffix">
+              <label for="prefix">Prefix</label>
+              <br>
+              <input type="radio" id="suffix" value="suffix" v-model="prefixSuffix">
+              <label for="suffix">Suffix</label>
+              <br>
+            </div>
+            <div class="form-group">
+              <input type="checkbox" id="file" value="file" v-model="type">
+              <label for="file">Rename Files</label>
+              <input type="checkbox" id="folder" value="folder" v-model="type">
+              <label for="folder">Rename Folders</label>
+              <br>
+            </div>
+          </fieldset>
+        </form>
+        <div class="alert alert-info" role="alert"><code>{{addRemove}} {{prefixSuffix}} "{{text}}" of the {{type.join('and ')}} in "{{file.name}}"</code></div>
+        <div class="form-group">
+          <div class="btn-group">
+            <button class="btn btn-primary" type="button" v-on:click="getPreview" :disabled="!canPreview">Preview</button>
+            <button class="btn btn-default" type="button" v-on:click="setDefaults" v-if="canRename">X</button>
+          </div>
+        </div>
+        <div class="list-group" v-if="preview.files"> 
+          <a href="#" class="list-group-item disabled">Files</a>
+          <a href="#" class="list-group-item" v-for="file in preview.files">{{file.name}} - {{file.newName}}</a>
+        </div>
+        <div class="list-group" v-if="preview.folders">
+          <a href="#" class="list-group-item disabled">Folders</a>
+          <a href="#" class="list-group-item" v-for="folder in preview.folders">{{folder.name}} - {{folder.newName}}</a>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-danger" type="button" v-on:click="rename" :disabled="!canRename">Go</button>
+        </div>
+        <div class="list-group" v-if="result.files"> 
+          <a href="#" class="list-group-item disabled">Files</a>
+          <a href="#" class="list-group-item" v-for="file in result.files">{{file.name}} - {{file.newName}}</a>
+        </div>
+        <div class="list-group" v-if="result.folders">
+          <a href="#" class="list-group-item disabled">Folders</a>
+          <a href="#" class="list-group-item" v-for="folder in result.folders">{{folder.name}} - {{folder.newName}}</a>
+        </div>
+        <div class="progress progress-striped active" v-if="state.job">
+          <div class="progress-bar"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  var component = Vue.component('component', {
+    template: '#component',
+    props: ['settings', 'state', 'file'],
+    data: function() {
+      return {
+        addRemove: 'add',
+        prefixSuffix: 'prefix',
+        type: ['file'],
+        text: '',
+        preview: [],
+        result: []
+      }
+    },
+    computed: {
+      canPreview: function() {
+        return !!this.file && !!this.file.id && !!this.text;
+      },
+      canRename: function() {
+        return !!this.preview.files || !!this.preview.folders;
+      }
+    },
+    methods: {
+      setDefaults: function(){
+         this.preview = [];
+         this.result = [];
+      },
+      getPreview: function() {
+        
+        var vm = this;
+        vm.state.job = true;
+        var folderId = vm.file.id;
+        var action = 'preview';
+        var type = vm.type;
+        var substr = vm.getSubstr(vm.text, vm.prefixSuffix, vm.addRemove);
+        var newSubstr = vm.getNewSubstr(vm.text, vm.prefixSuffix, vm.addRemove);
+        console.log(substr, newSubstr);
+        google.script.run
+          .withSuccessHandler(function(preview) {
+            vm.state.job = false;
+            console.log(preview);
+            vm.preview = preview;
+          })
+          .rename(folderId, action, type, substr, newSubstr);
+      },
+      
+      rename: function() {
+        var vm = this;
+        vm.state.job = true;
+        var folderId = vm.file.id;
+        var action = 'rename';
+        var type = vm.type;
+        var substr = vm.getSubstr(vm.text, vm.prefixSuffix, vm.addRemove);
+        var newSubstr = vm.getNewSubstr(vm.text, vm.prefixSuffix, vm.addRemove);
+        console.log(substr, newSubstr);
+        google.script.run
+          .withSuccessHandler(function(result) {
+            vm.state.job = false;
+            console.log(result);
+            vm.result = result;
+          })
+          .rename(folderId, action, type, substr, newSubstr);
+      },
+
+      saveSettings: function() {
+        this.$emit('save');
+      }
+    },
+    created: function() {
+      this.getSubstr = function(text, prefixSuffix, addRemove) {
+        var res_ = '';
+        if (addRemove == 'add') {
+          res_ = '^(.*)$';
+        } else {
+          if (prefixSuffix == 'prefix') {
+            res_ = '^(' + text + ')(.*)$';
+          } else {
+            res_ = '^(.*)(' + text + ')$';
+          }
+        };
+        return res_;
+      };
+      this.getNewSubstr = function(text, prefixSuffix, addRemove) {
+        var res_ = '';
+        if (addRemove == 'add') {
+          if (prefixSuffix == 'prefix') {
+            res_ = text + '$1';
+          } else {
+            res_ = '$1' + text;
+          }
+        } else {
+          if (prefixSuffix == 'prefix') {
+            res_ = '$2';
+          } else {
+            res_ = '$1';
+          }
+        };
+        return res_;
+      }
+    }
+
+  });
+</script>
