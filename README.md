@@ -5,4 +5,9 @@ The tool has limitations due to the Google API and may return an error or skip f
 
 To get started, choose a folder and your rename requirements and click "Preview" below. We will query your folders and files and display a summary of the activity the Editor will run through. Click "Go" to proceed with the renaming.
 
+## Release
+
+[Run the app](https://script.google.com/macros/s/AKfycbw2UjRmPSCyGnBI8Emo1NS5REi2JuhvkrU--bE3DptJiNY4pjD3/exec)
+
+## Screenshots
 ![](./accessories/img01.png)
