@@ -1,6 +1,6 @@
 <script>
     var DEVELOPER_KEY = 'AIzaSyD79VvrITprjEWXSdP72irdIHRw2Bsz-ro';
-    var DIALOG_DIMENSIONS = {width: 600, height: 425};
+    var DIALOG_DIMENSIONS = {width: 800, height: 525};
     var pickerApiLoaded = false;
 
     function onApiLoad() {
@@ -38,7 +38,7 @@
     function pickerCallback(data) {
       var action = data[google.picker.Response.ACTION];
       if (action == google.picker.Action.PICKED) {
-        
+
         var doc = data[google.picker.Response.DOCUMENTS][0];
         vm.methodOne(doc);
       } else if (action == google.picker.Action.CANCEL) {
@@ -50,4 +50,3 @@
       console.error(message);
     }
   </script>
-  
